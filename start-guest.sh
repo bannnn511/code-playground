@@ -1,7 +1,7 @@
 # set the guest kernel
 
 arch=$(uname -m)
-kernel_path=$(pwd)"/hello-vmlinux.bin"
+kernel_path=$(pwd)"/firecracker/hello-vmlinux.bin"
 
 if [ ${arch} = "x86_64" ]; then
     curl --unix-socket /tmp/firecracker.socket -i \
@@ -28,7 +28,7 @@ fi
 
 # set the guest rootfs:
 
-rootfs_path=$(pwd)"/hello-rootfs.ext4"
+rootfs_path=$(pwd)"/firecracker/hello-rootfs.ext4"
 curl --unix-socket /tmp/firecracker.socket -i \
     -X PUT 'http://localhost/drives/rootfs' \
     -H 'Accept: application/json' \
