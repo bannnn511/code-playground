@@ -1,12 +1,15 @@
+# Download firecracker binary
 release_url="https://github.com/firecracker-microvm/firecracker/releases"
 latest=$(basename $(curl -fsSLI -o /dev/null -w %{url_effective} ${release_url}/latest))
 arch=$(uname -m)
+mkdir firecracker
 curl -L ${release_url}/download/${latest}/firecracker-${latest}-${arch}.tgz |
-    tar -xz
-
-mv firecracker-${latest}-$(uname -m) firecracker
+    tar -xz -C firecracker --strip-components=1
 
 cd firecracker
+
+# Rename the binary to "firecracker":
+mv firecracker-${latest}-$(uname -m) firecracker
 
 arch=$(uname -m)
 dest_kernel="hello-vmlinux.bin"
