@@ -1,0 +1,7 @@
+### Send POST request with json body
+POST http://localhost:8080/compile
+Content-Type: application/json
+
+{
+  "code": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"Hello, world\")\n}\n"
+}

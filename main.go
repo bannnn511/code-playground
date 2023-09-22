@@ -1,53 +1,30 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"net/http"
 )
 
 func main() {
-	tmpDir, err := os.MkdirTemp("", "sandbox")
-	if err != nil {
-		panic(err)
-	}
-	defer os.RemoveAll(tmpDir)
-	test := "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"Hello, world\")\n}\n"
-	fs, err := splitFiles([]byte(test))
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
+	// Echo instance
+	e := echo.New()
 
-	if !fs.Contains("go.mod") {
-		fs.AddFile("go.mod", []byte("module play\n"))
-	}
-	for f, src := range fs.m {
-		in := filepath.Join(tmpDir, f)
-		if err := os.WriteFile(in, src, 0644); err != nil {
-			panicError(err)
-		}
-	}
+	// Middleware
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
 
-	exePath := filepath.Join(tmpDir, "a.out")
+	// Routes
+	e.GET("/health", health)
+	e.POST("/compile", compileAndRun)
 
-	var goArgs []string
-	goArgs = append(goArgs, "build")
-	goArgs = append(goArgs, "-o", exePath, ".")
-	cmd := exec.Command("go", goArgs...)
-	cmd.Dir = tmpDir
-	cmd.Env = append(cmd.Env, "CGO_ENABLED=0")
-	out := &bytes.Buffer{}
-	cmd.Stderr, cmd.Stdout = out, out
+	// Start server
+	e.Logger.Fatal(e.Start(":8080"))
+}
 
-	if err := cmd.Run(); err != nil {
-		fmt.Println("error here", out)
-		panicError(err)
-	}
-
-	fmt.Println("output", out)
+func health(c echo.Context) error {
+	return c.String(http.StatusOK, "OK")
 }
 
 func panicError(err error) {
