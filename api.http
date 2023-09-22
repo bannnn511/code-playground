@@ -1,4 +1,4 @@
-### Send POST request with json body
+### Request compile code
 POST http://localhost:8080/compile
 Content-Type: application/json
 
