@@ -2,11 +2,15 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 )
+
+const sandboxBackEndUrl = "localhost:3000/run"
 
 // buildCode compiles code from src and return execute path
 func buildCode(tmpDir string, src []byte) (string, error) {
@@ -42,4 +46,24 @@ func buildCode(tmpDir string, src []byte) (string, error) {
 	}
 
 	return exePath, nil
+}
+
+func runCode(ctx context.Context, exePath string) error {
+	exeBytes, err := os.ReadFile(exePath)
+	if err != nil {
+		return err
+	}
+
+	sreq, err := http.NewRequestWithContext(ctx, "POST", sandboxBackEndUrl, bytes.NewReader(exeBytes))
+	if err != nil {
+		return fmt.Errorf("NewRequestWithContext %q:%v", sandboxBackEndUrl, err)
+	}
+	res, err := http.DefaultClient.Do(sreq)
+	if err != nil {
+		return fmt.Errorf("POST %q: %w", sandboxBackEndUrl, err)
+	}
+
+	fmt.Println(res)
+
+	return nil
 }

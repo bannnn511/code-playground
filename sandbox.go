@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"github.com/labstack/echo/v4"
+	"log"
 	"net/http"
 	"os"
 )
@@ -23,8 +25,14 @@ func compileAndRun(c echo.Context) error {
 	}
 
 	out, err := buildCode(tmpDir, []byte(req.Code))
+	log.Printf("buildCode at %v %v", tmpDir, out)
 	if err != nil {
 		panicError(err)
+	}
+
+	err = runCode(context.TODO(), out)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err)
 	}
 
 	return c.JSON(http.StatusOK, out)
